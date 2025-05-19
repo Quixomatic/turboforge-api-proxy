@@ -1,0 +1,23 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy application code
+COPY app.js ./
+
+# Expose the application port
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV N8N_URL=http://n8n:5678/webhook
+ENV RESEARCH_WEBHOOK=process-research
+ENV IMPLEMENT_WEBHOOK=process-implementation
+
+# Run the application
+CMD ["node", "app.js"]

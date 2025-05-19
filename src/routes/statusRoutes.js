@@ -1,0 +1,19 @@
+/**
+ * Status Routes
+ * Routes for checking operation status
+ */
+
+import express from 'express';
+import * as statusController from '../controllers/statusController.js';
+import { validateStatusRequest } from '../middleware/validator.js';
+
+const router = express.Router();
+
+/**
+ * @route   GET /api/status/:operationId
+ * @desc    Check status of an operation
+ * @access  Public
+ */
+router.get('/:operationId', validateStatusRequest, statusController.getOperationStatus);
+
+export default router;
