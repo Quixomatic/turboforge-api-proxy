@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # TurboForge API Proxy
+  api-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: turboforge-api-proxy
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - N8N_URL=http://n8n:5678/webhook
+      - RESEARCH_WEBHOOK=process-research
+      - IMPLEMENT_WEBHOOK=process-implementation
+      - OLLAMA_URL=http://ollama:11434/api
+      - OLLAMA_MODEL=turboforge-architect
+      - SERVICENOW_INSTANCE=${SERVICENOW_INSTANCE}
+      - API_KEY=${API_KEY}
+      - ENABLE_API_KEY_AUTH=${ENABLE_API_KEY_AUTH:-false}
+      - OPERATION_EXPIRY_HOURS=24
+      - LOG_LEVEL=info
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:3000}
+    depends_on:
+      - n8n
+      - ollama
+    networks:
+      - turboforge-network
+
+  # n8n for workflow automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: turboforge-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - N8N_LOG_LEVEL=info
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-false}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-}
+      - NODE_ENV=production
+      - N8N_SKIP_WEBHOOK_DEREGISTRATION_SHUTDOWN=true
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/.n8n/workflows
+    networks:
+      - turboforge-network
+
+  # Ollama for AI model serving
+  ollama:
+    image: ollama/ollama:latest
+    container_name: turboforge-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+      - ./ollama:/ollama-files
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    command: >
+      sh -c "
+        ollama serve &
+        sleep 10
+        if ! ollama list | grep turboforge-architect; then
+          echo 'Creating turboforge-architect model...'
+          ollama create turboforge-architect -f /ollama-files/turboforge-architect.modelfile
+        fi
+        wait
+      "
+    networks:
+      - turboforge-network
+
+volumes:
+  n8n-data:
+  ollama-models:
+
+networks:
+  turboforge-network:
+    driver: bridge
