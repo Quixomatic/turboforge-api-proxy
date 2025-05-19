@@ -1,10 +1,10 @@
 /**
  * Validator Middleware
- * Validation middleware for API requests
+ * Validation middleware for API requests using Joi
  */
 
 import Joi from 'joi';
-import config from '../config/index.js';
+import logger from '../utils/logger.js';
 
 /**
  * Validates research request body against schema
@@ -274,6 +274,11 @@ export const validateCallbackRequest = (req, res, next) => {
   // First validate params
   const paramsValidation = paramsSchema.validate(req.params);
   if (paramsValidation.error) {
+    logger.warn('Validation error in callback params', {
+      error: paramsValidation.error.details,
+      path: req.originalUrl
+    });
+    
     return res.status(400).json({
       error: 'Validation Error',
       details: paramsValidation.error.details.map(detail => detail.message),
@@ -295,19 +300,6 @@ export const validateCallbackRequest = (req, res, next) => {
  * @param {String} property - Request property to validate (body, params, query)
  */
 const validateRequest = (req, res, next, schema, property = 'body') => {
-  // Check API key if enabled
-  if (config.enableApiKeyAuth) {
-    const apiKey = req.headers['x-api-key'];
-    if (apiKey !== config.apiKey) {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Invalid or missing API key',
-        status: 401,
-        timestamp: new Date().toISOString()
-      });
-    }
-  }
-
   // Validate request against schema
   const { error, value } = schema.validate(req[property], {
     abortEarly: false,
@@ -315,6 +307,11 @@ const validateRequest = (req, res, next, schema, property = 'body') => {
   });
 
   if (error) {
+    logger.warn('Validation error', {
+      error: error.details,
+      path: req.originalUrl
+    });
+    
     return res.status(400).json({
       error: 'Validation Error',
       details: error.details.map(detail => detail.message),

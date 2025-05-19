@@ -5,6 +5,7 @@
 
 import express from 'express';
 import * as healthController from '../controllers/healthController.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -13,6 +14,6 @@ const router = express.Router();
  * @desc    Check API health
  * @access  Public
  */
-router.get('/', healthController.checkHealth);
+router.get('/', asyncHandler(healthController.checkHealth));
 
 export default router;

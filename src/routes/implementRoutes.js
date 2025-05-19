@@ -6,6 +6,7 @@
 import express from 'express';
 import * as implementController from '../controllers/implementController.js';
 import { validateImplementRequest } from '../middleware/validator.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -14,6 +15,6 @@ const router = express.Router();
  * @desc    Implement process in ServiceNow
  * @access  Public
  */
-router.post('/', validateImplementRequest, implementController.initiateImplementation);
+router.post('/', validateImplementRequest, asyncHandler(implementController.initiateImplementation));
 
 export default router;

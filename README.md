@@ -227,28 +227,104 @@ Response:
 
 ```
 turboforge-api-proxy/
-├── src/                          # Source code directory
-│   ├── config/                   # Configuration management
-│   │   ├── index.js              # Main configuration loader
+├── src/
+│   ├── config/
+│   │   ├── index.js              # Configuration loader
 │   │   └── validator.js          # Environment variable validation
-│   ├── controllers/              # Request controllers
+│   ├── controllers/
+│   │   ├── index.js              # Controllers index
 │   │   ├── healthController.js   # Health check controller
 │   │   ├── researchController.js # Research API controller
 │   │   ├── implementController.js # Implementation API controller
-│   │   └── statusController.js   # Status API controller
-│   ├── middleware/               # Express middleware
+│   │   ├── statusController.js   # Status API controller
+│   │   └── callbackController.js # Callback handling controller
+│   ├── middleware/
+│   │   ├── index.js              # Middleware index
 │   │   ├── errorHandler.js       # Global error handling middleware
-│   │   ├── logger.js             # Request logging middleware
+│   │   ├── requestLogger.js      # Request logging middleware
+│   │   ├── authenticate.js       # API key authentication middleware
+│   │   ├── rateLimiter.js        # Rate limiting middleware
 │   │   └── validator.js          # Request validation middleware
-│   ├── services/                 # Business logic services
+│   ├── services/
+│   │   ├── index.js              # Services index
 │   │   ├── n8nService.js         # n8n integration service
 │   │   ├── ollamaService.js      # Ollama integration service
 │   │   ├── operationService.js   # Operation tracking service
 │   │   └── callbackService.js    # Callback handling service
-│   ├── utils/                    # Utility functions
+│   ├── utils/
 │   │   ├── asyncHandler.js       # Async error handling utility
 │   │   └── logger.js             # Logging utility
-│   ├── routes/                   # API route definitions
+│   ├── routes/
+│   │   ├── index.js              # Main router
+│   │   ├── healthRoutes.js       # Health check routes
+│   │   ├── researchRoutes.js     # Research API routes
+│   │   ├── implementRoutes.js    # Implementation API routes
+│   │   ├── statusRoutes.js       # Status API routes
+│   │   └── callbackRoutes.js     # Callback routes
+│   └── app.js                    # Express application setup
+├── tests/                        # Test files
+│   ├── unit/                     # Unit tests
+│   │   ├── controllers/          # Controller tests
+│   │   ├── services/             # Service tests
+│   │   └── utils/                # Utility tests
+│   ├── integration/              # Integration tests
+│   │   ├── research.test.js      # Research API tests
+│   │   ├── implement.test.js     # Implementation API tests
+│   │   └── status.test.js        # Status API tests
+│   └── mocks/                    # Test mocks and fixtures
+│       ├── n8nResponses.js       # Mock n8n responses
+│       └── processDefinitions.js # Sample process definitions
+├── scripts/
+│   ├── start.sh                  # Start script
+│   └── deploy.sh                 # Deployment script
+├── docs/
+│   ├── api.md                    # API documentation
+│   └── integration.md            # Integration guide
+├── .env.example                  # Example environment variables
+├── .env                          # Environment variables (gitignored)
+├── .gitignore                    # Git ignore file
+├── .eslintrc.js                  # ESLint configuration
+├── .prettierrc                   # Prettier configuration
+├── jest.config.js                # Jest test configuration
+├── nodemon.json                  # Nodemon configuration
+├── package.json                  # NPM package configuration
+├── package-lock.json             # NPM package lock
+├── Dockerfile                    # Docker build configuration
+├── docker-compose.yml            # Docker Compose configuration
+├── README.md                     # Project documentation
+└── server.js                     # Application entry point
+```
+
+```
+turboforge-api-proxy/
+├── src/
+│   ├── config/
+│   │   ├── index.js              # Configuration loader
+│   │   └── validator.js          # Environment variable validation
+│   ├── controllers/
+│   │   ├── index.js              # Controllers index
+│   │   ├── healthController.js   # Health check controller
+│   │   ├── researchController.js # Research API controller
+│   │   ├── implementController.js # Implementation API controller
+│   │   ├── statusController.js   # Status API controller
+│   │   └── callbackController.js # Callback handling controller
+│   ├── middleware/
+│   │   ├── index.js              # Middleware index
+│   │   ├── errorHandler.js       # Global error handling middleware
+│   │   ├── requestLogger.js      # Request logging middleware
+│   │   ├── authenticate.js       # API key authentication middleware
+│   │   ├── rateLimiter.js        # Rate limiting middleware
+│   │   └── validator.js          # Request validation middleware
+│   ├── services/
+│   │   ├── index.js              # Services index
+│   │   ├── n8nService.js         # n8n integration service
+│   │   ├── ollamaService.js      # Ollama integration service
+│   │   ├── operationService.js   # Operation tracking service
+│   │   └── callbackService.js    # Callback handling service
+│   ├── utils/
+│   │   ├── asyncHandler.js       # Async error handling utility
+│   │   └── logger.js             # Logging utility
+│   ├── routes/
 │   │   ├── index.js              # Main router
 │   │   ├── healthRoutes.js       # Health check routes
 │   │   ├── researchRoutes.js     # Research API routes

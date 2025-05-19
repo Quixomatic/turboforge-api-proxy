@@ -6,6 +6,7 @@
 import express from 'express';
 import * as researchController from '../controllers/researchController.js';
 import { validateResearchRequest } from '../middleware/validator.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -14,6 +15,6 @@ const router = express.Router();
  * @desc    Initiate research for process creation
  * @access  Public
  */
-router.post('/', validateResearchRequest, researchController.initiateResearch);
+router.post('/', validateResearchRequest, asyncHandler(researchController.initiateResearch));
 
 export default router;

@@ -6,6 +6,7 @@
 import express from 'express';
 import * as callbackController from '../controllers/callbackController.js';
 import { validateCallbackRequest } from '../middleware/validator.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const router = express.Router();
 router.post(
   '/research/:operationId',
   validateCallbackRequest,
-  callbackController.handleResearchCallback
+  asyncHandler(callbackController.handleResearchCallback)
 );
 
 /**
@@ -28,7 +29,7 @@ router.post(
 router.post(
   '/implement/:operationId',
   validateCallbackRequest,
-  callbackController.handleImplementCallback
+  asyncHandler(callbackController.handleImplementCallback)
 );
 
 export default router;

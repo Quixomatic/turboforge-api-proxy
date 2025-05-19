@@ -6,6 +6,7 @@
 import express from 'express';
 import * as statusController from '../controllers/statusController.js';
 import { validateStatusRequest } from '../middleware/validator.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -14,6 +15,6 @@ const router = express.Router();
  * @desc    Check status of an operation
  * @access  Public
  */
-router.get('/:operationId', validateStatusRequest, statusController.getOperationStatus);
+router.get('/:operationId', validateStatusRequest, asyncHandler(statusController.getOperationStatus));
 
 export default router;
