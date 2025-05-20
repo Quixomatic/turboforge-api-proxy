@@ -9,6 +9,7 @@ import researchRoutes from './researchRoutes.js';
 import implementRoutes from './implementRoutes.js';
 import statusRoutes from './statusRoutes.js';
 import callbackRoutes from './callbackRoutes.js';
+import chatRoutes from './chatRoutes.js';
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.use('/api/research', researchRoutes);
 router.use('/api/implement', implementRoutes);
 router.use('/api/status', statusRoutes);
 router.use('/api/callback', callbackRoutes);
+router.use('/api/chat', chatRoutes);
 
 // 404 handler
 router.use('*', (req, res) => {
