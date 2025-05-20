@@ -11,7 +11,7 @@ class CallbackService {
   constructor() {
     logger.info('Initialized callback service');
   }
-  
+
   /**
    * Processes a research workflow callback
    * @param {Object} data - Callback data
@@ -19,77 +19,71 @@ class CallbackService {
    */
   async processResearchCallback(data) {
     const { operationId, success, result, error } = data;
-    
+
     // Get the operation
     const operation = operationService.getOperation(operationId);
-    
+
     if (!operation) {
       logger.warn(`Research callback received for unknown operation: ${operationId}`);
       return false;
     }
-    
+
     // Check operation type
     if (operation.type !== 'research') {
       logger.warn(`Type mismatch in research callback: ${operation.type}`, {
         operationId
       });
     }
-    
+
     // Handle success case
     if (success) {
       logger.info(`Research operation completed successfully: ${operationId}`);
-      
-      // Process the research result
+
+      // Process the research result - with the new data format,
+      // we're primarily passing through the data without heavy processing
       let processedResult = result;
-      
-      // Add any post-processing of research results here
-      if (processedResult.sources) {
-        // Sort sources by relevance or authority
-        processedResult.sources = processedResult.sources.sort(
-          (a, b) => (b.authorityScore || 0) - (a.authorityScore || 0)
-        );
-      }
-      
-      // Add metadata about successful research
-      processedResult = {
-        ...processedResult,
-        metadata: {
+
+      // Add minimal metadata about the research
+      if (processedResult.researchData && processedResult.researchData.searchResults) {
+        // Calculate some basic stats for informational purposes
+        const searchResults = processedResult.researchData.searchResults;
+        const resultCount = searchResults.length;
+        const highAuthorityCount = searchResults.filter(r => (r.authorityScore || 0) >= 15).length;
+
+        processedResult.researchData.metadata = {
+          resultCount,
+          highAuthorityCount,
           serviceNowInstance: config.servicenowInstance,
           timestamp: new Date().toISOString(),
-          processingTime: this._calculateProcessingTime(operation.created),
-          confidence: processedResult.confidence || {
-            overall: 'medium'
-          }
-        }
-      };
-      
+          processingTime: this._calculateProcessingTime(operation.created)
+        };
+      }
+
       // Mark operation as complete
       operationService.completeOperation(operationId, processedResult);
-      
+
       return true;
     }
-    
+
     // Handle error case
     else {
       logger.error(`Research operation failed: ${operationId}`, {
         error
       });
-      
+
       // Format error info
-      const errorInfo = typeof error === 'string' 
-        ? { message: error } 
-        : error;
-      
+      const errorInfo = typeof error === 'string' ? { message: error } : error;
+
       // Mark operation as failed
       operationService.failOperation(operationId, {
         ...errorInfo,
         timestamp: new Date().toISOString()
       });
-      
+
       return true;
     }
   }
-  
+
   /**
    * Processes an implementation workflow callback
    * @param {Object} data - Callback data
@@ -97,29 +91,29 @@ class CallbackService {
    */
   async processImplementCallback(data) {
     const { operationId, success, result, error } = data;
-    
+
     // Get the operation
     const operation = operationService.getOperation(operationId);
-    
+
     if (!operation) {
       logger.warn(`Implementation callback received for unknown operation: ${operationId}`);
       return false;
     }
-    
+
     // Check operation type
     if (operation.type !== 'implement') {
       logger.warn(`Type mismatch in implementation callback: ${operation.type}`, {
         operationId
       });
     }
-    
+
     // Handle success case
     if (success) {
       logger.info(`Implementation operation completed successfully: ${operationId}`);
-      
+
       // Process the implementation result
       let processedResult = result;
-      
+
       // Generate ServiceNow links for the created records
       processedResult = {
         ...processedResult,
@@ -130,34 +124,32 @@ class CallbackService {
           processingTime: this._calculateProcessingTime(operation.created)
         }
       };
-      
+
       // Mark operation as complete
       operationService.completeOperation(operationId, processedResult);
-      
+
       return true;
     }
-    
+
     // Handle error case
     else {
       logger.error(`Implementation operation failed: ${operationId}`, {
         error
       });
-      
+
       // Format error info
-      const errorInfo = typeof error === 'string' 
-        ? { message: error } 
-        : error;
-      
+      const errorInfo = typeof error === 'string' ? { message: error } : error;
+
       // Mark operation as failed
       operationService.failOperation(operationId, {
         ...errorInfo,
         timestamp: new Date().toISOString()
       });
-      
+
       return true;
     }
   }
-  
+
   /**
    * Calculates processing time in milliseconds
    * @private
@@ -169,7 +161,7 @@ class CallbackService {
     const end = new Date().getTime();
     return end - start;
   }
-  
+
   /**
    * Generates ServiceNow links for created records
    * @private
@@ -179,20 +171,20 @@ class CallbackService {
   _generateServiceNowLinks(result) {
     const instance = config.servicenowInstance;
     const links = {};
-    
+
     // Admin view link
     if (result.processId) {
       links.admin = `https://${instance}/x_312987_turbofo_0_process.do?sys_id=${result.processId}`;
     }
-    
+
     // User view link
     if (result.processId) {
       links.user = `https://${instance}/sp?id=tf_step_form&process=${result.processId}`;
     }
-    
+
     // Process list link
     links.processList = `https://${instance}/nav_to.do?uri=x_312987_turbofo_0_process_list.do`;
-    
+
     return links;
   }
 }
